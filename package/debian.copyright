@@ -1,0 +1,23 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: *
+Copyright: 2018, Alexander Couzens <lynxis@fe80.eu>
+           2015, Arne Kappen <arne.kappen@hhi.fraunhofer.de>
+           2021, Felix Fietkau <nbd@nbd.name>
+           2012-2013, Felix Fietkau <nbd@openwrt.org>
+           2014, Gioacchino Mazzurco <gio@eigenlab.org>
+           2018, Hans Dedecker <dedeckeh@gmail.com>
+           2013, Jo-Philipp Wich <jow@openwrt.org>
+           2017, Matthias Schiffer <mschiffer@universe-factory.net>
+           2012-2013, Steven Barth <steven@midlink.org>
+License: GPL-2
+
+License: GPL-2
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License version 2
+ as published by the Free Software Foundation
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
