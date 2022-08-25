@@ -21,7 +21,7 @@ SET(SOURCES
 	iprule.c proto.c proto-static.c proto-shell.c
 	config.c device.c bridge.c veth.c vlan.c alias.c
 	macvlan.c ubus.c vlandev.c wireless.c
-	extdev.c bonding.c)
+	extdev.c bonding.c proto-dhcp.c)
 
 
 FIND_LIBRARY(uci NAMES uci)
@@ -66,4 +66,10 @@ TARGET_LINK_LIBRARIES(netifd ${LIBS})
 
 INSTALL(TARGETS netifd
 	RUNTIME DESTINATION sbin
+)
+
+ADD_EXECUTABLE(dhcp-script dhcp-script.c)
+TARGET_LINK_LIBRARIES(dhcp-script ${ubus} ${ubox} ${LIBS})
+INSTALL(TARGETS dhcp-script
+	RUNTIME DESTINATION libexec/netifd
 )
