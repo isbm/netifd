@@ -21,7 +21,7 @@ SET(SOURCES
 	iprule.c proto.c proto-static.c proto-shell.c
 	config.c device.c bridge.c veth.c vlan.c alias.c
 	macvlan.c ubus.c vlandev.c wireless.c
-	extdev.c bonding.c proto-dhcp.c)
+	extdev.c bonding.c proto-isc-dhcp.c proto-udhcp.c)
 
 
 FIND_LIBRARY(uci NAMES uci)
@@ -68,8 +68,14 @@ INSTALL(TARGETS netifd
 	RUNTIME DESTINATION sbin
 )
 
-ADD_EXECUTABLE(dhcp-script dhcp-script.c)
-TARGET_LINK_LIBRARIES(dhcp-script ${ubus} ${ubox} ${LIBS})
-INSTALL(TARGETS dhcp-script
+ADD_EXECUTABLE(isc-dhcp-script isc-dhcp-script.c)
+TARGET_LINK_LIBRARIES(isc-dhcp-script ${ubus} ${ubox} ${LIBS})
+INSTALL(TARGETS isc-dhcp-script
+	RUNTIME DESTINATION libexec/netifd
+)
+
+ADD_EXECUTABLE(udhcp-script udhcp-script.c)
+TARGET_LINK_LIBRARIES(udhcp-script ${ubus} ${ubox} ${LIBS})
+INSTALL(TARGETS udhcp-script
 	RUNTIME DESTINATION libexec/netifd
 )

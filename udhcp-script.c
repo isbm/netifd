@@ -110,10 +110,11 @@ wait_for_dad(const char *interface, int timeout)
 int
 main(int argc, char **argv)
 {
-    if (argc != 1 || !getenv("NETIFD_INTERFACE")) {
+    if (argc != 2 || !getenv("NETIFD_INTERFACE")) {
         fprintf(stderr, "This program should only be called by udhcpc\n");
         return -1;
     }
+    const char *reason = argv[1];
 
     struct blob_buf b = {};
 
@@ -128,6 +129,7 @@ main(int argc, char **argv)
         key[end - *cur] = 0;
         blobmsg_add_string(&b, key, end + 1);
     }
+    blobmsg_add_string(&b, "reason", reason);
 
     struct ubus_context *ctx = ubus_connect(NULL);
 	if (!ctx) {
@@ -147,7 +149,6 @@ main(int argc, char **argv)
         fprintf(stderr, "Ubus call failed: %s\n", ubus_strerror(ret));
     }
 
-    const char *reason = getenv("reason");
     if (reason && strcmp(reason, "PREINIT6") == 0) {
         const char *interface = getenv("interface");
 

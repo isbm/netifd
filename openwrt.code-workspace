@@ -1,0 +1,46 @@
+{
+    "folders": [
+		{
+			"path": ".."
+		}
+	],
+    "settings": {
+        "files.associations": {
+            "_service": "xml",
+            "blobmsg.h": "c",
+            "ucimap.h": "c",
+            "uci.h": "c",
+            "types.h": "c",
+            "numeric": "c",
+            "array": "c",
+            "istream": "c",
+            "limits": "c",
+            "sstream": "c",
+            "streambuf": "c",
+            "utility": "c",
+            "blobmsg_json.h": "c",
+            "typeinfo": "c",
+            "inet.h": "c",
+            "random": "c",
+            "compare": "c",
+            "functional": "c",
+            "ostream": "c",
+            "ranges": "c",
+            "tuple": "c",
+            "type_traits": "c",
+            "attr.h": "c",
+            "msg.h": "c",
+            "netlink.h": "c",
+            "socket.h": "c",
+            "sockios.h": "c",
+            "bitsperlong.h": "c",
+            "neighbour.h": "c",
+            "rtnetlink.h": "c",
+            "uloop.h": "c",
+            "object.h": "c",
+            "handlers.h": "c",
+            "memory": "c",
+            "*.tcc": "c"
+        }
+    }
+}

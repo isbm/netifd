@@ -7,7 +7,7 @@
 #include "device.h"
 #include "system.h"
 
-struct dhcp_proto_state {
+struct isc_dhcp_proto_state {
 	struct interface_proto_state proto;
 
 	struct blob_attr *config;
@@ -63,10 +63,12 @@ static const struct blobmsg_policy proto_dhcp_attributes[__OPT_MAX] = {
 };
 
 
-const struct uci_blob_param_list proto_dhcp_attr = {
+const struct uci_blob_param_list proto_isc_dhcp_attr = {
 	.n_params = __OPT_MAX,
 	.params = proto_dhcp_attributes
 };
+
+static struct proto_handler isc_dhcp_proto6;
 
 static void
 dhcp_process_callback(struct netifd_process *proc, int ret)
@@ -75,13 +77,13 @@ dhcp_process_callback(struct netifd_process *proc, int ret)
 }
 
 static void
-start_dhcp_client(struct dhcp_proto_state *state)
+start_isc_dhcp_client(struct isc_dhcp_proto_state *state)
 {
 	char leasefile[128];
 	char conffile[128];
 
-	snprintf(leasefile, sizeof(leasefile), "/var/run/udhcp-%s.lease", state->proto.iface->name);
-	snprintf(conffile, sizeof(conffile), "/var/run/udhcp-%s.conf", state->proto.iface->name);
+	snprintf(leasefile, sizeof(leasefile), "/var/run/isc-dhcp-%s.lease", state->proto.iface->name);
+	snprintf(conffile, sizeof(conffile), "/var/run/isc-dhcp-%s.conf", state->proto.iface->name);
 
 	FILE *f = fopen(conffile, "w");
 	if (state->dhcpv6)  {
@@ -104,7 +106,7 @@ start_dhcp_client(struct dhcp_proto_state *state)
 		"-pf", "/dev/null",
 		"-lf", leasefile,
 		"-cf", conffile,
-		"-sf", "/usr/libexec/netifd/dhcp-script",
+		"-sf", "/usr/libexec/netifd/isc-dhcp-script",
 		"--dad-wait-time", dad_wait,
 		"-e",
 		iface,
@@ -116,7 +118,7 @@ start_dhcp_client(struct dhcp_proto_state *state)
 }
 
 static int
-dhcp_proto_setup(struct dhcp_proto_state *state)
+isc_dhcp_proto_setup(struct isc_dhcp_proto_state *state)
 {
 	struct interface *iface = state->proto.iface;
 	struct device *dev = state->proto.iface->main_dev.dev;
@@ -129,22 +131,22 @@ dhcp_proto_setup(struct dhcp_proto_state *state)
 
 	state->state = DHCP_SETTING_UP;
 
-	start_dhcp_client(state);
+	start_isc_dhcp_client(state);
 
 	return 0;
 }
 
 static int
-dhcp_handler(struct interface_proto_state *proto,
+isc_dhcp_handler(struct interface_proto_state *proto,
 	       enum interface_proto_cmd cmd, bool force)
 {
 	int ret = 0;
 
-	struct dhcp_proto_state *state = container_of(proto, struct dhcp_proto_state, proto);
+	struct isc_dhcp_proto_state *state = container_of(proto, struct isc_dhcp_proto_state, proto);
 
 	switch (cmd) {
 	case PROTO_CMD_SETUP:
-		ret = dhcp_proto_setup(state);
+		ret = isc_dhcp_proto_setup(state);
 		break;
 	case PROTO_CMD_TEARDOWN:
 	case PROTO_CMD_RENEW:
@@ -155,7 +157,7 @@ dhcp_handler(struct interface_proto_state *proto,
 }
 
 static void
-dhcp_set_dns_servers(struct interface *iface, struct blob_attr *attr)
+isc_dhcp_set_dns_servers(struct interface *iface, struct blob_attr *attr)
 {
 	if (attr == NULL)
 		return;
@@ -177,7 +179,7 @@ dhcp_set_dns_servers(struct interface *iface, struct blob_attr *attr)
 }
 
 static int
-dhcp4_configure(struct dhcp_proto_state *state, const char *action, struct blob_attr **tb)
+isc_dhcp4_configure(struct isc_dhcp_proto_state *state, const char *action, struct blob_attr **tb)
 {
 	struct interface *iface = state->proto.iface;
 	if (strcmp(action, "EXPIRE") == 0) {
@@ -218,7 +220,9 @@ dhcp4_configure(struct dhcp_proto_state *state, const char *action, struct blob_
 			}
 		}
 
-		dhcp_set_dns_servers(iface, tb[NOTIFY_DNS]);
+		if (tb[NOTIFY_DNS]) {
+			isc_dhcp_set_dns_servers(iface, tb[NOTIFY_DNS]);
+		}
 
 		if (tb[NOTIFY_MTU]) {
 			char * end;
@@ -240,7 +244,7 @@ dhcp4_configure(struct dhcp_proto_state *state, const char *action, struct blob_
 }
 
 static int
-dhcp6_configure(struct dhcp_proto_state *state, const char *action, struct blob_attr **tb)
+isc_dhcp6_configure(struct isc_dhcp_proto_state *state, const char *action, struct blob_attr **tb)
 {
 	struct interface *iface = state->proto.iface;
 	if (strcmp(action, "DEREF6") == 0 || strcmp(action, "EXPIRE6") == 0 || strcmp(action, "RELEASE6") == 0 || strcmp(action, "STOP6") == 0) {
@@ -276,7 +280,9 @@ dhcp6_configure(struct dhcp_proto_state *state, const char *action, struct blob_
 		proto_apply_ip_settings(iface, b.head, false);
 		blob_buf_free(&b);
 
-		dhcp_set_dns_servers(iface, tb[NOTIFY_IP6_DNS]);
+		if (tb[NOTIFY_IP6_DNS]) {
+			isc_dhcp_set_dns_servers(iface, tb[NOTIFY_IP6_DNS]);
+		}
 
 		interface_update_complete(iface);
 
@@ -287,9 +293,9 @@ dhcp6_configure(struct dhcp_proto_state *state, const char *action, struct blob_
 }
 
 static int
-dhcp_notify(struct interface_proto_state *proto, struct blob_attr *attr)
+isc_dhcp_notify(struct interface_proto_state *proto, struct blob_attr *attr)
 {
-	struct dhcp_proto_state *state = container_of(proto, struct dhcp_proto_state, proto);
+	struct isc_dhcp_proto_state *state = container_of(proto, struct isc_dhcp_proto_state, proto);
 
 	struct blob_attr *tb[__NOTIFY_LAST];
 	blobmsg_parse(notify_attr, __NOTIFY_LAST, tb, blob_data(attr), blob_len(attr));
@@ -300,28 +306,26 @@ dhcp_notify(struct interface_proto_state *proto, struct blob_attr *attr)
 	char *action = blobmsg_get_string(tb[NOTIFY_REASON]);
 
 	if (state->dhcpv6) {
-		return dhcp6_configure(state, action, tb);
+		return isc_dhcp6_configure(state, action, tb);
 	} else {
-		return dhcp4_configure(state, action, tb);
+		return isc_dhcp4_configure(state, action, tb);
 	}
 }
 
 static void
-dhcp_free(struct interface_proto_state *proto)
+isc_dhcp_free(struct interface_proto_state *proto)
 {
-	struct dhcp_proto_state *state;
+	struct isc_dhcp_proto_state *state;
 
-	state = container_of(proto, struct dhcp_proto_state, proto);
+	state = container_of(proto, struct isc_dhcp_proto_state, proto);
 	free(state);
 }
 
-static struct proto_handler dhcp_proto6;
-
 static struct interface_proto_state *
-dhcp_attach(const struct proto_handler *h, struct interface *iface,
+isc_dhcp_attach(const struct proto_handler *h, struct interface *iface,
 	      struct blob_attr *attr)
 {
-	struct dhcp_proto_state *state;
+	struct isc_dhcp_proto_state *state;
 
 	state = calloc(1, sizeof(*state));
 	if (!state)
@@ -334,11 +338,11 @@ dhcp_attach(const struct proto_handler *h, struct interface *iface,
 	}
 	memcpy(state->config, attr, blob_pad_len(attr));
 
-	state->proto.free = dhcp_free;
-	state->proto.cb = dhcp_handler;
-	state->proto.notify = dhcp_notify;
+	state->proto.free = isc_dhcp_free;
+	state->proto.cb = isc_dhcp_handler;
+	state->proto.notify = isc_dhcp_notify;
 
-	state->dhcpv6 = h == &dhcp_proto6;
+	state->dhcpv6 = h == &isc_dhcp_proto6;
 
 	state->client.cb = dhcp_process_callback;
 	state->client.log_prefix = iface->name;
@@ -347,23 +351,23 @@ dhcp_attach(const struct proto_handler *h, struct interface *iface,
 	return &state->proto;
 }
 
-static struct proto_handler dhcp_proto = {
-	.name = "dhcp",
+static struct proto_handler isc_dhcp_proto = {
+	.name = "isc-dhcp",
 	.flags = PROTO_FLAG_RENEW_AVAILABLE,
-	.config_params = &proto_dhcp_attr,
-	.attach = dhcp_attach,
+	.config_params = &proto_isc_dhcp_attr,
+	.attach = isc_dhcp_attach,
 };
 
-static struct proto_handler dhcp_proto6 = {
-	.name = "dhcp6",
+static struct proto_handler isc_dhcp_proto6 = {
+	.name = "isc-dhcp6",
 	.flags = 0,
-	.config_params = &proto_dhcp_attr,
-	.attach = dhcp_attach,
+	.config_params = &proto_isc_dhcp_attr,
+	.attach = isc_dhcp_attach,
 };
 
 static void __init
-dhcp_proto_init(void)
+isc_dhcp_proto_init(void)
 {
-	add_proto_handler(&dhcp_proto);
-	add_proto_handler(&dhcp_proto6);
+	add_proto_handler(&isc_dhcp_proto);
+	add_proto_handler(&isc_dhcp_proto6);
 }
