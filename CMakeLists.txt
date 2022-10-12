@@ -7,6 +7,8 @@ IF(NOT ${CMAKE_VERSION} LESS 3.0)
   check_c_compiler_flag(-Wimplicit-fallthrough HAS_IMPLICIT_FALLTHROUGH)
 ENDIF()
 
+OPTION(ENABLE_PROTO_SHELL "enable shell protocol handlers" ON)
+
 ADD_DEFINITIONS(-Os -Wall -Werror --std=gnu99 -Wmissing-declarations -Wno-unknown-warning-option -Wno-format-truncation)
 
 IF(HAS_IMPLICIT_FALLTHROUGH)
@@ -18,11 +20,14 @@ SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 SET(SOURCES
 	main.c utils.c system.c tunnel.c handler.c
 	interface.c interface-ip.c interface-event.c
-	iprule.c proto.c proto-static.c proto-shell.c
+	iprule.c proto.c proto-static.c
 	config.c device.c bridge.c veth.c vlan.c alias.c
 	macvlan.c ubus.c vlandev.c wireless.c
 	extdev.c bonding.c proto-isc-dhcp.c proto-udhcp.c)
 
+IF(ENABLE_PROTO_SHELL)
+	LIST(APPEND SOURCES proto-shell.c)
+ENDIF()
 
 FIND_LIBRARY(uci NAMES uci)
 FIND_LIBRARY(ubox NAMES ubox)
@@ -61,6 +66,7 @@ ENDIF()
 
 
 ADD_EXECUTABLE(netifd ${SOURCES})
+TARGET_COMPILE_DEFINITIONS(netifd PRIVATE $<$<BOOL:${ENABLE_PROTO_SHELL}>:ENABLE_PROTO_SHELL>)
 
 TARGET_LINK_LIBRARIES(netifd ${LIBS})
 

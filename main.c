@@ -325,7 +325,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+#ifdef ENABLE_PROTO_SHELL
 	proto_shell_init();
+#endif
 	extdev_init();
 	wireless_init();
 
