@@ -414,6 +414,8 @@ interface_set_link_state(struct interface *iface, bool new_state)
 		interface_event(iface, IFEV_LINK_UP);
 		iface->link_up_event = true;
 	}
+
+	interface_event(iface, IFEV_LINK_UP);
 }
 
 static void
