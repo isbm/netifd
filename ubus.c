@@ -807,6 +807,7 @@ netifd_dump_status(struct interface *iface)
 
 	blobmsg_add_u8(&b, "up", iface->state == IFS_UP);
 	blobmsg_add_u8(&b, "pending", iface->state == IFS_SETUP);
+	blobmsg_add_u8(&b, "link", iface->link_state);
 	blobmsg_add_u8(&b, "available", iface->available);
 	blobmsg_add_u8(&b, "autostart", iface->autostart);
 	blobmsg_add_u8(&b, "dynamic", iface->dynamic);
