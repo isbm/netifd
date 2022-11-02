@@ -64,6 +64,7 @@ enum {
 	DEV_ATTR_DUPLEX,
 	DEV_ATTR_IP_FORWARDING,
 	DEV_ATTR_IP6_FORWARDING,
+	DEV_ATTR_ARP,
 	__DEV_ATTR_MAX,
 };
 
@@ -130,6 +131,7 @@ enum {
 	DEV_OPT_DUPLEX			= (1ULL << 31),
 	DEV_OPT_IP_FORWARDING   = (1ULL << 32),
 	DEV_OPT_IP6_FORWARDING  = (1ULL << 33),
+	DEV_OPT_ARP             = (1ULL << 34),
 };
 
 /* events broadcasted to all users of a device */
@@ -209,6 +211,7 @@ struct device_settings {
 	bool duplex;
 	bool ip_forwarding;
 	bool ip6_forwarding;
+	bool arp;
 };
 
 /*

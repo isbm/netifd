@@ -1736,6 +1736,9 @@ system_if_get_settings(struct device *dev, struct device_settings *s)
 
 		s->multicast = ifr.ifr_flags & IFF_MULTICAST;
 		s->flags |= DEV_OPT_MULTICAST;
+
+		s->arp = !(ifr.ifr_flags & IFF_NOARP);
+		s->flags |= DEV_OPT_ARP;
 	}
 
 	if (!system_get_rpfilter(dev, buf, sizeof(buf))) {
@@ -1929,6 +1932,10 @@ system_if_apply_settings(struct device *dev, struct device_settings *s, uint64_t
 		system_set_ip_forwarding(dev, s->ip_forwarding ? "1" : "0");
 	if (apply_mask & DEV_OPT_IP6_FORWARDING)
 		system_set_ip6_forwarding(dev, s->ip6_forwarding ? "1" : "0");
+	if (apply_mask & DEV_OPT_ARP) {
+		if (system_if_flags(dev->ifname, !s->arp ? IFF_NOARP : 0, s->arp ? IFF_NOARP : 0) < 0)
+			s->flags &= ~DEV_OPT_ARP;
+	}
 
 	system_set_ethtool_settings(dev, s);
 }
