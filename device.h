@@ -62,6 +62,8 @@ enum {
 	DEV_ATTR_AUTH,
 	DEV_ATTR_SPEED,
 	DEV_ATTR_DUPLEX,
+	DEV_ATTR_IP_FORWARDING,
+	DEV_ATTR_IP6_FORWARDING,
 	__DEV_ATTR_MAX,
 };
 
@@ -126,6 +128,8 @@ enum {
 	DEV_OPT_ARP_ACCEPT		= (1ULL << 29),
 	DEV_OPT_SPEED			= (1ULL << 30),
 	DEV_OPT_DUPLEX			= (1ULL << 31),
+	DEV_OPT_IP_FORWARDING   = (1ULL << 32),
+	DEV_OPT_IP6_FORWARDING  = (1ULL << 33),
 };
 
 /* events broadcasted to all users of a device */
@@ -203,6 +207,8 @@ struct device_settings {
 	bool auth;
 	unsigned int speed;
 	bool duplex;
+	bool ip_forwarding;
+	bool ip6_forwarding;
 };
 
 /*

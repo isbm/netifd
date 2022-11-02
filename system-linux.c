@@ -460,6 +460,16 @@ static void system_set_arp_accept(struct device *dev, const char *val)
 	system_set_dev_sysctl("ipv4/conf", "arp_accept", dev->ifname, val);
 }
 
+static void system_set_ip_forwarding(struct device *dev, const char *val)
+{
+	system_set_dev_sysctl("ipv4/conf", "forwarding", dev->ifname, val);
+}
+
+static void system_set_ip6_forwarding(struct device *dev, const char *val)
+{
+	system_set_dev_sysctl("ipv6/conf", "forwarding", dev->ifname, val);
+}
+
 static void system_bridge_set_multicast_to_unicast(struct device *dev, const char *val)
 {
 	system_set_dev_sysfs("brport/multicast_to_unicast", dev->ifname, val);
@@ -618,6 +628,18 @@ static int system_get_drop_unsolicited_na(struct device *dev, char *buf, const s
 static int system_get_arp_accept(struct device *dev, char *buf, const size_t buf_sz)
 {
 	return system_get_dev_sysctl("ipv4/conf", "arp_accept",
+			dev->ifname, buf, buf_sz);
+}
+
+static int system_get_ip_forwarding(struct device *dev, char *buf, const size_t buf_sz)
+{
+	return system_get_dev_sysctl("ipv4/conf", "forwarding",
+			dev->ifname, buf, buf_sz);
+}
+
+static int system_get_ip6_forwarding(struct device *dev, char *buf, const size_t buf_sz)
+{
+	return system_get_dev_sysctl("ipv6/conf", "forwarding",
 			dev->ifname, buf, buf_sz);
 }
 
@@ -1795,6 +1817,16 @@ system_if_get_settings(struct device *dev, struct device_settings *s)
 		s->arp_accept = strtoul(buf, NULL, 0);
 		s->flags |= DEV_OPT_ARP_ACCEPT;
 	}
+
+	if (!system_get_ip_forwarding(dev, buf, sizeof(buf))) {
+		s->ip_forwarding = strtoul(buf, NULL, 0);
+		s->flags |= DEV_OPT_IP_FORWARDING;
+	}
+
+	if (!system_get_ip6_forwarding(dev, buf, sizeof(buf))) {
+		s->ip6_forwarding = strtoul(buf, NULL, 0);
+		s->flags |= DEV_OPT_IP6_FORWARDING;
+	}
 }
 
 void
@@ -1893,6 +1925,11 @@ system_if_apply_settings(struct device *dev, struct device_settings *s, uint64_t
 		system_set_drop_unsolicited_na(dev, s->drop_unsolicited_na ? "1" : "0");
 	if (apply_mask & DEV_OPT_ARP_ACCEPT)
 		system_set_arp_accept(dev, s->arp_accept ? "1" : "0");
+	if (apply_mask & DEV_OPT_IP_FORWARDING)
+		system_set_ip_forwarding(dev, s->ip_forwarding ? "1" : "0");
+	if (apply_mask & DEV_OPT_IP6_FORWARDING)
+		system_set_ip6_forwarding(dev, s->ip6_forwarding ? "1" : "0");
+
 	system_set_ethtool_settings(dev, s);
 }
 

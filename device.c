@@ -63,6 +63,8 @@ static const struct blobmsg_policy dev_attrs[__DEV_ATTR_MAX] = {
 	[DEV_ATTR_AUTH] = { .name = "auth", .type = BLOBMSG_TYPE_BOOL },
 	[DEV_ATTR_SPEED] = { .name = "speed", .type = BLOBMSG_TYPE_INT32 },
 	[DEV_ATTR_DUPLEX] = { .name = "duplex", .type = BLOBMSG_TYPE_BOOL },
+	[DEV_ATTR_IP_FORWARDING] = { .name = "ip_forwarding", .type = BLOBMSG_TYPE_BOOL},
+	[DEV_ATTR_IP6_FORWARDING] = { .name = "ip6_forwarding", .type = BLOBMSG_TYPE_BOOL},
 };
 
 const struct uci_blob_param_list device_attr_list = {
@@ -280,6 +282,8 @@ device_merge_settings(struct device *dev, struct device_settings *n)
 	n->auth = s->flags & DEV_OPT_AUTH ? s->auth : os->auth;
 	n->speed = s->flags & DEV_OPT_SPEED ? s->speed : os->speed;
 	n->duplex = s->flags & DEV_OPT_DUPLEX ? s->duplex : os->duplex;
+	n->ip_forwarding = s->flags & DEV_OPT_IP_FORWARDING ? s->ip_forwarding : os->ip_forwarding;
+	n->ip6_forwarding = s->flags & DEV_OPT_IP6_FORWARDING ? s->ip6_forwarding : os->ip6_forwarding;
 	n->flags = s->flags | os->flags | os->valid_flags;
 }
 
@@ -462,6 +466,16 @@ device_init_settings(struct device *dev, struct blob_attr **tb)
 	if ((cur = tb[DEV_ATTR_DUPLEX])) {
 		s->duplex = blobmsg_get_bool(cur);
 		s->flags |= DEV_OPT_DUPLEX;
+	}
+
+	if ((cur = tb[DEV_ATTR_IP_FORWARDING])) {
+		s->ip_forwarding = blobmsg_get_bool(cur);
+		s->flags |= DEV_OPT_IP_FORWARDING;
+	}
+
+	if ((cur = tb[DEV_ATTR_IP6_FORWARDING])) {
+		s->ip6_forwarding = blobmsg_get_bool(cur);
+		s->flags |= DEV_OPT_IP6_FORWARDING;
 	}
 
 	device_set_disabled(dev, disabled);
@@ -1210,6 +1224,10 @@ device_dump_status(struct blob_buf *b, struct device *dev)
 			blobmsg_add_u8(b, "arp_accept", st.arp_accept);
 		if (st.flags & DEV_OPT_AUTH)
 			blobmsg_add_u8(b, "auth", st.auth);
+		if (st.flags & DEV_OPT_IP_FORWARDING)
+			blobmsg_add_u8(b, "ip_forwarding", st.ip_forwarding);
+		if (st.flags & DEV_OPT_IP6_FORWARDING)
+			blobmsg_add_u8(b, "ip6_forwarding", st.ip6_forwarding);
 	}
 
 	s = blobmsg_open_table(b, "statistics");
