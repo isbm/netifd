@@ -65,6 +65,7 @@ enum {
 	DEV_ATTR_IP_FORWARDING,
 	DEV_ATTR_IP6_FORWARDING,
 	DEV_ATTR_ARP,
+	DEV_ATTR_IP6_ACCEPT_ROUTING_HEADER,
 	__DEV_ATTR_MAX,
 };
 
@@ -132,6 +133,7 @@ enum {
 	DEV_OPT_IP_FORWARDING   = (1ULL << 32),
 	DEV_OPT_IP6_FORWARDING  = (1ULL << 33),
 	DEV_OPT_ARP             = (1ULL << 34),
+	DEV_OPT_IP6_ACCEPT_ROUTING_HEADER = (1ULL << 35),
 };
 
 /* events broadcasted to all users of a device */
@@ -212,6 +214,7 @@ struct device_settings {
 	bool ip_forwarding;
 	bool ip6_forwarding;
 	bool arp;
+	int accept_routing_header;
 };
 
 /*

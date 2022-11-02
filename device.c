@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -66,6 +67,7 @@ static const struct blobmsg_policy dev_attrs[__DEV_ATTR_MAX] = {
 	[DEV_ATTR_IP_FORWARDING] = { .name = "ip_forwarding", .type = BLOBMSG_TYPE_BOOL},
 	[DEV_ATTR_IP6_FORWARDING] = { .name = "ip6_forwarding", .type = BLOBMSG_TYPE_BOOL},
 	[DEV_ATTR_ARP] = { .name = "arp", .type = BLOBMSG_TYPE_BOOL},
+	[DEV_ATTR_IP6_ACCEPT_ROUTING_HEADER] = { .name = "ip6_accept_routing_header", .type = BLOBMSG_TYPE_STRING },
 };
 
 const struct uci_blob_param_list device_attr_list = {
@@ -286,6 +288,7 @@ device_merge_settings(struct device *dev, struct device_settings *n)
 	n->ip_forwarding = s->flags & DEV_OPT_IP_FORWARDING ? s->ip_forwarding : os->ip_forwarding;
 	n->ip6_forwarding = s->flags & DEV_OPT_IP6_FORWARDING ? s->ip6_forwarding : os->ip6_forwarding;
 	n->arp = s->flags & DEV_OPT_ARP ? s->arp : os->arp;
+	n->accept_routing_header = s->flags & DEV_OPT_IP6_ACCEPT_ROUTING_HEADER ? s->accept_routing_header : os->accept_routing_header;
 	n->flags = s->flags | os->flags | os->valid_flags;
 }
 
@@ -483,6 +486,22 @@ device_init_settings(struct device *dev, struct blob_attr **tb)
 	if ((cur = tb[DEV_ATTR_ARP])) {
 		s->arp = blobmsg_get_bool(cur);
 		s->flags |= DEV_OPT_ARP;
+	}
+
+	if ((cur = tb[DEV_ATTR_IP6_ACCEPT_ROUTING_HEADER])) {
+		const char *val = blobmsg_get_string(cur);
+		if (strcasecmp(val, "all") == 0) {
+			s->accept_routing_header = 1;
+			s->flags |= DEV_OPT_IP6_ACCEPT_ROUTING_HEADER;
+		} else if (strcasecmp(val, "rh2") == 0) {
+			s->accept_routing_header = 0;
+			s->flags |= DEV_OPT_IP6_ACCEPT_ROUTING_HEADER;
+		} else if (strcasecmp(val, "none") == 0) {
+			s->accept_routing_header = -1;
+			s->flags |= DEV_OPT_IP6_ACCEPT_ROUTING_HEADER;
+		} else {
+			DPRINTF("Invalid value: %s - (use 'all', 'rh2' or 'none')\n", val);
+		}
 	}
 
 	device_set_disabled(dev, disabled);
@@ -1235,6 +1254,18 @@ device_dump_status(struct blob_buf *b, struct device *dev)
 			blobmsg_add_u8(b, "ip_forwarding", st.ip_forwarding);
 		if (st.flags & DEV_OPT_IP6_FORWARDING)
 			blobmsg_add_u8(b, "ip6_forwarding", st.ip6_forwarding);
+		if (st.flags & DEV_OPT_IP6_ACCEPT_ROUTING_HEADER) {
+			const char *val = NULL;
+			if (st.accept_routing_header == 0) {
+				val = "rh2";
+			} else if (st.accept_routing_header < 0) {
+				val = "none";
+			} else {
+				val = "all";
+			}
+
+			blobmsg_add_string(b, "ip6_accept_routing_header", val);
+		}
 	}
 
 	s = blobmsg_open_table(b, "statistics");

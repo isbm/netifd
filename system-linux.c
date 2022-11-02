@@ -470,6 +470,13 @@ static void system_set_ip6_forwarding(struct device *dev, const char *val)
 	system_set_dev_sysctl("ipv6/conf", "forwarding", dev->ifname, val);
 }
 
+static void system_set_ip6_accept_source_route(struct device *dev, int val)
+{
+	char sval[10];
+	snprintf(sval, sizeof(sval), "%d", val);
+	system_set_dev_sysctl("ipv6/conf", "accept_source_route", dev->ifname, sval);
+}
+
 static void system_bridge_set_multicast_to_unicast(struct device *dev, const char *val)
 {
 	system_set_dev_sysfs("brport/multicast_to_unicast", dev->ifname, val);
@@ -640,6 +647,12 @@ static int system_get_ip_forwarding(struct device *dev, char *buf, const size_t 
 static int system_get_ip6_forwarding(struct device *dev, char *buf, const size_t buf_sz)
 {
 	return system_get_dev_sysctl("ipv6/conf", "forwarding",
+			dev->ifname, buf, buf_sz);
+}
+
+static int system_get_accept_source_route(struct device *dev, char *buf, const size_t buf_sz)
+{
+	return system_get_dev_sysctl("ipv6/conf", "accept_source_route",
 			dev->ifname, buf, buf_sz);
 }
 
@@ -1830,6 +1843,11 @@ system_if_get_settings(struct device *dev, struct device_settings *s)
 		s->ip6_forwarding = strtoul(buf, NULL, 0);
 		s->flags |= DEV_OPT_IP6_FORWARDING;
 	}
+
+	if (!system_get_accept_source_route(dev, buf, sizeof(buf))) {
+		s->accept_routing_header = strtoul(buf, NULL, 0);
+		s->flags |= DEV_OPT_IP6_ACCEPT_ROUTING_HEADER;
+	}
 }
 
 void
@@ -1936,6 +1954,8 @@ system_if_apply_settings(struct device *dev, struct device_settings *s, uint64_t
 		if (system_if_flags(dev->ifname, !s->arp ? IFF_NOARP : 0, s->arp ? IFF_NOARP : 0) < 0)
 			s->flags &= ~DEV_OPT_ARP;
 	}
+	if (apply_mask & DEV_OPT_IP6_ACCEPT_ROUTING_HEADER)
+		system_set_ip6_accept_source_route(dev, s->accept_routing_header);
 
 	system_set_ethtool_settings(dev, s);
 }
