@@ -477,6 +477,11 @@ static void system_set_ip6_forwarding(struct device *dev, const char *val)
 	system_set_dev_sysctl("ipv6/conf", "forwarding", dev->ifname, val);
 }
 
+static void system_set_ip6_hop_limit(struct device *dev, const char *val)
+{
+	system_set_dev_sysctl("ipv6/conf", "hop_limit", dev->ifname, val);
+}
+
 static void system_set_ip6_accept_source_route(struct device *dev, int val)
 {
 	char sval[10];
@@ -660,6 +665,12 @@ static int system_get_ip6_forwarding(struct device *dev, char *buf, const size_t
 static int system_get_accept_source_route(struct device *dev, char *buf, const size_t buf_sz)
 {
 	return system_get_dev_sysctl("ipv6/conf", "accept_source_route",
+			dev->ifname, buf, buf_sz);
+}
+
+static int system_get_ip6_hop_limit(struct device *dev, char *buf, const size_t buf_sz)
+{
+	return system_get_dev_sysctl("ipv6/conf", "hop_limit",
 			dev->ifname, buf, buf_sz);
 }
 
@@ -1855,6 +1866,11 @@ system_if_get_settings(struct device *dev, struct device_settings *s)
 		s->accept_routing_header = strtoul(buf, NULL, 0);
 		s->flags |= DEV_OPT_IP6_ACCEPT_ROUTING_HEADER;
 	}
+
+	if (!system_get_ip6_hop_limit(dev, buf, sizeof(buf))) {
+		s->hop_limit = strtoul(buf, NULL, 0);
+		s->flags |= DEV_OPT_IP6_HOP_LIMIT;
+	}
 }
 
 void
@@ -1963,6 +1979,11 @@ system_if_apply_settings(struct device *dev, struct device_settings *s, uint64_t
 	}
 	if (apply_mask & DEV_OPT_IP6_ACCEPT_ROUTING_HEADER)
 		system_set_ip6_accept_source_route(dev, s->accept_routing_header);
+
+	if (apply_mask & DEV_OPT_IP6_HOP_LIMIT) {
+		snprintf(buf, sizeof(buf), "%d", s->hop_limit);
+		system_set_ip6_hop_limit(dev, buf);
+	}
 
 	system_set_ethtool_settings(dev, s);
 }

@@ -68,6 +68,7 @@ static const struct blobmsg_policy dev_attrs[__DEV_ATTR_MAX] = {
 	[DEV_ATTR_IP6_FORWARDING] = { .name = "ip6_forwarding", .type = BLOBMSG_TYPE_BOOL},
 	[DEV_ATTR_ARP] = { .name = "arp", .type = BLOBMSG_TYPE_BOOL},
 	[DEV_ATTR_IP6_ACCEPT_ROUTING_HEADER] = { .name = "ip6_accept_routing_header", .type = BLOBMSG_TYPE_STRING },
+	[DEV_ATTR_IP6_HOP_LIMIT] = { .name = "ip6_hop_limit", .type = BLOBMSG_TYPE_INT32},
 };
 
 const struct uci_blob_param_list device_attr_list = {
@@ -289,6 +290,7 @@ device_merge_settings(struct device *dev, struct device_settings *n)
 	n->ip6_forwarding = s->flags & DEV_OPT_IP6_FORWARDING ? s->ip6_forwarding : os->ip6_forwarding;
 	n->arp = s->flags & DEV_OPT_ARP ? s->arp : os->arp;
 	n->accept_routing_header = s->flags & DEV_OPT_IP6_ACCEPT_ROUTING_HEADER ? s->accept_routing_header : os->accept_routing_header;
+	n->hop_limit = s->flags & DEV_OPT_IP6_HOP_LIMIT ? s->hop_limit : os->hop_limit;
 	n->flags = s->flags | os->flags | os->valid_flags;
 }
 
@@ -502,6 +504,11 @@ device_init_settings(struct device *dev, struct blob_attr **tb)
 		} else {
 			DPRINTF("Invalid value: %s - (use 'all', 'rh2' or 'none')\n", val);
 		}
+	}
+
+	if ((cur = tb[DEV_ATTR_IP6_HOP_LIMIT])) {
+		s->hop_limit = blobmsg_get_u32(cur);
+		s->flags |= DEV_OPT_IP6_HOP_LIMIT;
 	}
 
 	device_set_disabled(dev, disabled);
@@ -1266,6 +1273,8 @@ device_dump_status(struct blob_buf *b, struct device *dev)
 
 			blobmsg_add_string(b, "ip6_accept_routing_header", val);
 		}
+		if (st.flags & DEV_OPT_IP6_HOP_LIMIT)
+			blobmsg_add_u32(b, "ip6_hop_limit", st.hop_limit);
 	}
 
 	s = blobmsg_open_table(b, "statistics");
