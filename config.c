@@ -27,6 +27,7 @@
 #include "proto.h"
 #include "wireless.h"
 #include "config.h"
+#include "system.h"
 
 bool config_init = false;
 
@@ -528,14 +529,26 @@ config_init_rules(void)
 static void
 config_init_globals(void)
 {
-	struct uci_section *globals = uci_lookup_section(
-			uci_ctx, uci_network, "globals");
+	struct uci_section *globals = uci_lookup_section(uci_ctx, uci_network, "globals");
 	if (!globals)
 		return;
 
-	const char *ula_prefix = uci_lookup_option_string(
-			uci_ctx, globals, "ula_prefix");
+	const char *ula_prefix = uci_lookup_option_string(uci_ctx, globals, "ula_prefix");
 	interface_ip_set_ula_prefix(ula_prefix);
+
+	struct global_settings config = {};
+
+	const char *default_ttl = uci_lookup_option_string(uci_ctx, globals, "ip_default_ttl");
+	if (default_ttl) {
+		config.ttl = strtoul(default_ttl, NULL, 10);
+		if (config.ttl < 1 || config.ttl > 255) {
+			netifd_log_message(L_WARNING, "Invalid value '%d' for ip4_default_ttl (allowed 1-255)\n");
+		} else {
+			config.flags |= GLOBAL_OPT_TTL;
+		}
+	}
+
+	system_globals_apply_settings(&config);
 }
 
 static void

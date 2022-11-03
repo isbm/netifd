@@ -379,3 +379,7 @@ int system_vlandev_del(struct device *vlandev)
 {
 	return 0;
 }
+
+void system_globals_apply_settings(const struct global_settings *settings)
+{
+}

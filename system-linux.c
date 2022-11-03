@@ -333,6 +333,13 @@ dev_sysfs_path(const char *ifname, const char *file)
 }
 
 static void
+system_set_sysctl(const char *file, const char *val)
+{
+	snprintf(dev_buf, sizeof(dev_buf), "%s/sys/net/%s", proc_path, file);
+	write_file(dev_buf, val);
+}
+
+static void
 system_set_dev_sysctl(const char *prefix, const char *file, const char *ifname,
 		      const char *val)
 {
@@ -4100,4 +4107,15 @@ int system_add_ip_tunnel(const struct device *dev, struct blob_attr *attr)
 		return -EINVAL;
 
 	return 0;
+}
+
+void system_globals_apply_settings(const struct global_settings *settings)
+{
+	uint64_t flags = settings->flags;
+	char buf[12];
+
+	if (flags & GLOBAL_OPT_TTL) {
+		snprintf(buf, sizeof(buf), "%d", settings->ttl);
+		system_set_sysctl("ipv4/ip_default_ttl", buf);
+	}
 }
