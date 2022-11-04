@@ -44,6 +44,7 @@ enum {
 	ROUTE_TYPE,
 	ROUTE_PROTO,
 	ROUTE_DISABLED,
+	ROUTE_ADVMSS,
 	__ROUTE_MAX
 };
 
@@ -61,6 +62,7 @@ static const struct blobmsg_policy route_attr[__ROUTE_MAX] = {
 	[ROUTE_TYPE] = { .name = "type", .type = BLOBMSG_TYPE_STRING },
 	[ROUTE_PROTO] = { .name = "proto", .type = BLOBMSG_TYPE_STRING },
 	[ROUTE_DISABLED] = { .name = "disabled", .type = BLOBMSG_TYPE_BOOL },
+	[ROUTE_ADVMSS] = { .name ="advmss", .type = BLOBMSG_TYPE_INT32 },
 };
 
 const struct uci_blob_param_list route_attr_list = {
@@ -458,6 +460,11 @@ interface_ip_add_route(struct interface *iface, struct blob_attr *attr, bool v6)
 	if ((cur = tb[ROUTE_MTU]) != NULL) {
 		route->mtu = blobmsg_get_u32(cur);
 		route->flags |= DEVROUTE_MTU;
+	}
+
+	if ((cur = tb[ROUTE_ADVMSS]) != NULL) {
+		route->advmss = blobmsg_get_u32(cur);
+		route->flags |= DEVROUTE_ADVMSS;
 	}
 
 	/* Use source-based routing */

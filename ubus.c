@@ -642,6 +642,9 @@ interface_ip_dump_route_list(struct interface_ip_settings *ip, bool enabled)
 		if (route->flags & DEVROUTE_MTU)
 			blobmsg_add_u32(&b, "mtu", route->mtu);
 
+		if (route->flags & DEVROUTE_ADVMSS)
+			blobmsg_add_u32(&b, "advmss", route->advmss);
+
 		if (route->flags & DEVROUTE_METRIC)
 			blobmsg_add_u32(&b, "metric", route->metric);
 
@@ -650,6 +653,7 @@ interface_ip_dump_route_list(struct interface_ip_settings *ip, bool enabled)
 
 		if (route->valid_until)
 			blobmsg_add_u32(&b, "valid", route->valid_until - now);
+
 
 		buf = blobmsg_alloc_string_buffer(&b, "source", buflen);
 		inet_ntop(af, &route->source, buf, buflen);

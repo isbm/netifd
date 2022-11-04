@@ -2828,13 +2828,16 @@ static int system_rt(struct device *dev, struct device_route *route, int cmd)
 	if (table >= 256)
 		nla_put_u32(msg, RTA_TABLE, table);
 
-	if (route->flags & DEVROUTE_MTU) {
+	if (route->flags & (DEVROUTE_MTU | DEVROUTE_ADVMSS)) {
 		struct nlattr *metrics;
 
 		if (!(metrics = nla_nest_start(msg, RTA_METRICS)))
 			goto nla_put_failure;
 
-		nla_put_u32(msg, RTAX_MTU, route->mtu);
+		if (route->flags & DEVROUTE_MTU)
+			nla_put_u32(msg, RTAX_MTU, route->mtu);
+		if (route->flags & DEVROUTE_ADVMSS)
+			nla_put_u32(msg, RTAX_ADVMSS, route->advmss);
 
 		nla_nest_end(msg, metrics);
 	}

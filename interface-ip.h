@@ -51,6 +51,9 @@ enum device_addr_flags {
 
 	/* neighbor mac address */
 	DEVNEIGH_MAC		= (1 << 11),
+
+	/* advertised mss */
+	DEVROUTE_ADVMSS     = (1 << 12),
 };
 
 union if_addr {
@@ -98,6 +101,7 @@ struct device_route {
 	unsigned int type;
 	unsigned int proto;
 	time_t valid_until;
+	unsigned int advmss;
 
 	/* must be last */
 	enum device_addr_flags flags;
