@@ -81,7 +81,7 @@ INSTALL(TARGETS isc-dhcp-script
 )
 
 ADD_EXECUTABLE(udhcp-script udhcp-script.c)
-TARGET_LINK_LIBRARIES(udhcp-script ${ubus} ${ubox} ${LIBS})
+TARGET_LINK_LIBRARIES(udhcp-script ${ubus} ${ubox})
 INSTALL(TARGETS udhcp-script
 	RUNTIME DESTINATION libexec/netifd
 )
