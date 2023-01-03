@@ -1,6 +1,5 @@
-= Netifd: User manual
-:revnumber: 0.1
-:revremark: draft
+= netifd: User manual
+:revnumber: 1.0
 :description: Netifd user documentation
 :source-highlighter: highlight.js
 :highlightjs-theme: base16/classic-light
@@ -17,9 +16,9 @@
 
 Netifd is used to configure network interfaces and the linux network stack.
 
-It supports configuration:
+Supported configuration:
 
- * Static configuration
+ * static configuration
  * DHCPv4/DHCPv6 (using udhcpc/udhcpc6)
  * bridges
  * VLAN (802.1Q)
@@ -37,7 +36,7 @@ This section can appear only one time and specifies system wide configuration. S
 
 `config device`::
 This section can appear multiple times and configures network device configuration
-or creates new network devices (like bridges, veth, ...). See <<device>>.
+or creates new network devices (e.g. bridges, veth, ...). See <<device>>.
 +
 A device in netifd context representes a network interface in linux.
 
@@ -45,16 +44,17 @@ A device in netifd context representes a network interface in linux.
 An interface represents one specific configuration of a netifd device.
 Multiple interfaces can be assigned to one device. See <<interface>>.
 +
-Every interfaces is configured using exactly one configuration protocol. A protocol is for example static configuration or DHCP.
+Every interface is configured using exactly one configuration protocol. A protocol is for example static configuration or DHCP.
 
 `config route _<name>_`/`config_route6 <name>`::
 Add a routing table entry for the IPv4/IPv6 stack. See <<route>>.
 
+{sp}+
 
-Every section can contain an arbitrary number of 
+Every section can contain an arbitrary number of these entries:
 
 `option _<name>_ _<value>_`:: to assign a single value to an option
-`list _<name>_ _<value>_`:: to assign multiple values to an option. To assign multiple values, this can be repeated like this:
+`list _<name>_ _<value>_`:: to assign multiple values to an option. To assign multiple values to one option, the list :
 +
 [source]
 ----
@@ -116,7 +116,7 @@ Configures the maximum transmition unit for IPv4/IPv6 packets.
 
 
 ==== Bridge
-The device type `bridge` creates a new bridge interface. A bridge acts like a network switch allowing it to connect multiple device together.
+The device type `bridge` creates a new bridge interface. A bridge acts like a network switch allowing it to connect multiple devices together.
 
 A bridge device adds the following options:
 
@@ -139,13 +139,13 @@ MACVLAN creates "clones" of network interfaces, that have different MAC adresses
 
 A MACVLAN device adds the following options:
 [horizontal]
-`ifname`:: The name of the underlying deivce.
+`ifname`:: The name of the underlying device.
 `mode`::
 +
 --
-This can be one of
+Can be one of the following:
 [horizontal]
-`private`::: Do not allow communication between macvlans devices for the same underlying device.
+`private`::: Do not allow communication between macvlan devices for the same underlying device.
 `vepa`::: Allow communication between macvlan devices for the same underlying device, if the communication is done through an external switch.
 `bridge`::: Allow communication between all macvlan devices for the same underlying device.
 `passthru`::: Take over the underlying device (only one macvlan device is allowed).
@@ -161,9 +161,9 @@ A VETH device adds the following options:
 
 [#interface]
 === Interface config
-A netifd interface is one concrete ip-configuration applied to an device (linux network interface).
-Every interface uses exactly one configuration protocol (like static address or DHCP).
-Multiple interfaces can be configured for one device. This allows i.e. configuring DHCPv4 and DHCPv6 for the same interface.
+A netifd interface is one concrete ip-configuration applied to a device (linux network interface).
+Every interface uses exactly one configuration protocol (like static address or DHCP), but
+multiple interfaces can be configured for one device. This allows for example configuring DHCPv4 nd DHCPv6 for the same interface.
 
 The following options are available for all interfaces:
 
@@ -205,7 +205,7 @@ One or more IPv6 addresses. In the format `<ip>/<masklen>` (e.g. `2001:db8::0/64
 ===== DHCP
 Use DHCP to configure the interface. This uses _udhcpc_ (proto: `udhcp`) or _udhcpc6_ (proto: `udhcp6`) to get an ip address, dns server, routes (for IPv4) and other parameters.
 
-Currently it receives and applies the following configuration parameters:
+Currently it receives and applies the following configuration parameters from a DHCP server:
 
 For IPv4:
 
@@ -227,13 +227,13 @@ The `route` and `route6` config sections are used to configure custom routes. Se
 
 [horizontal]
 `disabled`::  If set to `1`, this route is not added to the routing table.
-`interface`:: The name of the netifd interface this route should use. (*required*)
+`interface`:: The name of the netifd interface packages send through this route should use. (*required*)
 `target`::    The address of the target network. This can contain the subnet mask as described in protocol <<proto_static>>. (*required*)
 `netmask`::   The netmask of the target network. Defaults to `32` for IPv4 and `128` for IPv6.
-`gateway`::   The address of the gateway to use, to reach `target`.
+`gateway`::   The address of the gateway to use when sending packets to `target`.
 `metric`::    The metric (priority) of the routing table entry.
 `mtu`::       The maximum transmition unit for this route.
-`source`::    The source address used for this route.
+`source`::    The source address used for packets send using this route.
 
 <<<
 
@@ -252,8 +252,9 @@ This configures:
 * An interface `eth0` is configured with
 ** the IPv4 addresses `192.0.2.2/24` and `198.51.100.5/4`
 ** the IPv6 address `2001:db8::2/48`
-** and the dns servers `192.0.2.1` and `192.0.2.5`
-** the configuration is named `lan`
+** the dns servers `192.0.2.1` and `192.0.2.5`
+
+This the configuration is named `lan`.
 
 The two device sections could be omitted.
 
@@ -266,7 +267,7 @@ The two device sections could be omitted.
 include::example.dhcp[]
 ----
 
-This configures the linux network interface eth0 with DHCPv4 and DHCPv6.
+This configures the linux network interface `eth0` with DHCPv4 and DHCPv6.
 
 [#example_bridge]
 ==== Bridge configuration example
