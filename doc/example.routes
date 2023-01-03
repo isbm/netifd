@@ -1,0 +1,33 @@
+config interface lan
+    option device  eth0
+    option proto   static
+    option ipaddr  192.0.2.2/24
+    option ip6addr 2001:db8::2/96
+
+
+config route route1
+    option interface lan
+    option target    0.0.0.0/0
+    option gateway   192.0.2.3
+    option metric    1
+
+config route route2
+    option interface lan
+    option target    198.51.100.128
+    option netmask   255.255.255.128
+    option gateway   192.0.2.100
+    option metric    2
+
+
+config route6 route61
+    option interface lan
+    option target    ::/0
+    option gateway   2001:db8::1
+    option metric    1
+    option mtu       1500
+
+config route6 route62
+    option interface lan_1
+    option target    2001:db8::1:/96
+    option gateway   2001:db8::15
+    option metric    2

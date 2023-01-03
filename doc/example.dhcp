@@ -1,0 +1,7 @@
+config interface lan_v4
+	option device eth0
+    option proto  udhcp
+
+config interface lan_v6
+	option device eth0
+	option proto  udhcp6
