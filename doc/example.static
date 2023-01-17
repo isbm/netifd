@@ -1,0 +1,20 @@
+config device
+    option name     lo
+
+config interface loopback
+	option device	lo
+	option proto	static
+	option ipaddr	127.0.0.1
+	option netmask	255.0.0.0
+
+config device
+    option name     eth0
+
+config interface lan
+    option device   eth0
+    option proto    static
+    list ipaddr     192.0.2.2/24
+    list ipaddr     "198.51.100.5/24"
+    option ip6addr  '2001:db8::2/48'
+    list dns        192.0.2.1
+    list dns        192.0.2.5

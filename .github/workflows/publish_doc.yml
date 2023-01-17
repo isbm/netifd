@@ -1,0 +1,34 @@
+name: asciidoctor-ghpages
+
+on:
+  push:
+    branches: [ lnx5 ]
+  pull_request:
+    branches: [ lnx5 ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Build HTML
+      uses: avattathil/asciidoctor-action@master
+      with:
+        program: "asciidoctor -D doc --backend=html5 doc/readme.adoc"
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v2
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: 'doc'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write

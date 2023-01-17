@@ -1,0 +1,10 @@
+config device
+    option type  bridge
+    option name  br-local
+    list   ports eth0
+    list   ports eth1
+    list   ports eth2
+
+config interface bridge
+    option device br-local
+    option ipaddr 192.0.2.2/24

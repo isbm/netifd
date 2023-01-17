@@ -1,0 +1,300 @@
+= netifd: User manual
+:revnumber: 1.0
+:description: Netifd user documentation
+:source-highlighter: highlight.js
+:highlightjs-theme: base16/classic-light
+:highlightjsdir: highlight
+:source-language: netifd
+:sectanchors:
+:sectnums:
+:nofooter:
+:toc: left
+:toc-interactive:
+:toclevels: 4
+
+== Overview
+
+Netifd is used to configure network interfaces and the linux network stack.
+
+Supported configuration:
+
+ * static configuration
+ * DHCPv4/DHCPv6 (using udhcpc/udhcpc6)
+ * bridges
+ * VLAN (802.1Q)
+ * MACVLAN
+ * VETH
+ * WLANs
+
+== Configuration
+Netifd configuration is located in the file `/etc/config/network`.
+It uses https://openwrt.org/docs/guide-user/base-system/uci[OpenWRT UCI] as its configuration format.
+The config file is separated into sections of four different types:
+
+`config globals globals`::
+This section can appear only one time and specifies system wide configuration. See <<globals>>.
+
+`config device`::
+This section can appear multiple times and configures network device configuration
+or creates new network devices (e.g. bridges, veth, ...). See <<device>>.
++
+A device in netifd context representes a network interface in linux.
+
+`config interface _<name>_`::
+An interface represents one specific configuration of a netifd device.
+Multiple interfaces can be assigned to one device. See <<interface>>.
++
+Every interface is configured using exactly one configuration protocol. A protocol is for example static configuration or DHCP.
+
+`config route _<name>_`/`config_route6 <name>`::
+Add a routing table entry for the IPv4/IPv6 stack. See <<route>>.
+
+{sp}+
+
+Every section can contain an arbitrary number of these entries:
+
+`option _<name>_ _<value>_`:: to assign a single value to an option
+`list _<name>_ _<value>_`:: to assign multiple values to an option. To assign multiple values to one option, the list :
++
+[source]
+----
+config interface
+    list ipaddr 1.2.3.4
+    list ipaddr 5.6.7.8
+----
+
+[#globals]
+=== Global config
+Some configuration options are not tied to a specific interface, but to the whole system (or network namespace).
+These options are configured in the globals section.
+
+[horizontal]
+`ula_prefix`::
+IPv6 ULA-Prefix for this device
+
+`ip_default_ttl`::
+Allows specifying the default TTL for IPv4 packets.
+
+[#device]
+=== Device config
+A netifd device represents a linux network interface.
+
+The following options are available for every device section:
+[horizontal]
+`name`::
+The linux interface name of the device (*required*)
+`type`::
+The type of the device (e.g. `bridge`, `veth`, ...). This can be omitted for automatically created interfaces (like ethernet, loopback, ...).
++
+The type implementation can add aditional options. See next chapters.
+
+`enabled`::
+If set to `0`, the device will not be configured by netifd.
+`ipv6`::
+If set to `0`, IPv6 support will be disabled.
+`multicast`::
+If set to `0`, multicast will not be supported.
+`macaddr`::
+Overwrite the hardware or automatically assigned MAC address.
+`ip_forwarding`/`ip6_forwarding`::
+If set to `1`, ip forwarding will be enabled for IPv4/IPv6. If set to `0`, it will be disabled. Otherwise the system's default value is used.
+`arp`::
+If set to `0`, arp support will be disabled.
+`ip6_accept_routing_header`::
++
+--
+Configures acceptance of IPv6 routing header. The following values are allowed:
+[horizontal]
+`all`:::  Accept all routing header types
+`rh2`:::  Accept only routing header type 2 (Linux default)
+`none`::: Discard all routing headers
+--
+`ip6_hop_limit`::
+Maximum number of hops for IPv6 packets
+`mtu`/`mtu6`::
+Configures the maximum transmition unit for IPv4/IPv6 packets.
+
+
+==== Bridge
+The device type `bridge` creates a new bridge interface. A bridge acts like a network switch allowing it to connect multiple devices together.
+
+A bridge device adds the following options:
+
+[horizontal]
+`ports`::        A list of devices that are added to the bridge.
+`bridge_empty`::
+If set to `1`, a bridge is created, even if no ports exist.
+Othwise the bridge device is not created.
+
+==== VLAN
+Two types of VLANs are supported by netifd (802.1ad and 802.1q). They are selected using the `type`-option of the device with a value of `8021q` or `8021ad`.
+
+A VLAN device adds the following options:
+[horizontal]
+`ifname`:: The name of the underlying device.
+`vid`::    The VLAN id.
+
+==== MACVLAN
+MACVLAN creates "clones" of network interfaces, that have different MAC adresses and can be moved to differnet network namespaces.
+
+A MACVLAN device adds the following options:
+[horizontal]
+`ifname`:: The name of the underlying device.
+`mode`::
++
+--
+Can be one of the following:
+[horizontal]
+`private`::: Do not allow communication between macvlan devices for the same underlying device.
+`vepa`::: Allow communication between macvlan devices for the same underlying device, if the communication is done through an external switch.
+`bridge`::: Allow communication between all macvlan devices for the same underlying device.
+`passthru`::: Take over the underlying device (only one macvlan device is allowed).
+--
+
+==== VETH
+The `veth` device type creates a virtual ethernet device pair. This could be used for example, to move one side of the pair into a different network namespace.
+
+A VETH device adds the following options:
+[horizontal]
+`peer_name`:: Name of the second interface.
+`peer_macaddr`:: MAC address of the second interface.
+
+[#interface]
+=== Interface config
+A netifd interface is one concrete ip-configuration applied to a device (linux network interface).
+Every interface uses exactly one configuration protocol (like static address or DHCP), but
+multiple interfaces can be configured for one device. This allows for example configuring DHCPv4 nd DHCPv6 for the same interface.
+
+The following options are available for all interfaces:
+
+[horizontal]
+`device`::  The name of the device used by this interface. (*required*)
+`proto`::   The protocol used for configuration. Defaults to `static`. See <<protocols>>.
+`auto`::    If set to `0`, the interfaces is not started automatically.
+`force_link`:: If set to `1`, the configuration is applied, even if the interface has no link.
+`dns`::     DNS servers configured by this interface.
+
+[#protocols]
+==== Protocols
+A configuration protocol is used to configure ip adresses and other parameters for an interface. Currently there are two protocol implemented for static ip configuration and for DHCP using _udhcpc_/_udhcpc6_.
+
+[#proto_static]
+===== Static
+This protocol allows static configuration of IPv4 and IPv6 addresses. The `proto` field of the interface must be set to `static`. See <<example_static>>.
+
+[horizontal]
+`ipaddr`::
++
+--
+One or more IPv4 addresses. This option allows several different formats:
+
+* `<ip>` (e.g. `192.0.2.1`)
+* `<ip>/<masklen>` (e.g. `192.0.2.1/24`)
+* `<ip>/<netmask>` (e.g. `192.0.2.1/255.255.255.0`)
+
+If the first format is used, the netmask is taken from the `netmask` option.
+--
+`netmask`::    Netmask used for IPv4 addresses without an explicit netmask. Defaults to `32`.
+`boradcast`::  IPv4 broadcast address.
+`gateway`::    Default gateway for IPv4.
+
+`ip6addr`::
+One or more IPv6 addresses. In the format `<ip>/<masklen>` (e.g. `2001:db8::0/64`). The masklen can be omitted, if it is 128.
+`ip6gw`::      Default gateway for IPv6.
+
+===== DHCP
+Use DHCP to configure the interface. This uses _udhcpc_ (proto: `udhcp`) or _udhcpc6_ (proto: `udhcp6`) to get an ip address, dns server, routes (for IPv4) and other parameters.
+
+Currently it receives and applies the following configuration parameters from a DHCP server:
+
+For IPv4:
+
+* IPv4 address with subnet mask
+* Default gateway
+* DNS server(s)
+* Maximum Transmition Unit (MTU)
+
+For IPv6:
+
+* IPv6 address with subnet mask 128 (stateful DHCPv6)
+* DNS server(s)
+
+To use one interface for DHCPv4 and DHCPv6 at the same time, an alias interface must be used. See <<example_dhcp>>.
+
+[#route]
+=== Route config
+The `route` and `route6` config sections are used to configure custom routes. See <<example_routes>>.
+
+[horizontal]
+`disabled`::  If set to `1`, this route is not added to the routing table.
+`interface`:: The name of the netifd interface packages send through this route should use. (*required*)
+`target`::    The address of the target network. This can contain the subnet mask as described in protocol <<proto_static>>. (*required*)
+`netmask`::   The netmask of the target network. Defaults to `32` for IPv4 and `128` for IPv6.
+`gateway`::   The address of the gateway to use when sending packets to `target`.
+`metric`::    The metric (priority) of the routing table entry.
+`mtu`::       The maximum transmition unit for this route.
+`source`::    The source address used for packets send using this route.
+
+<<<
+
+=== Examples
+
+[#example_static]
+==== Static configuration example
+[source]
+----
+include::example.static[]
+----
+This configures:
+
+* The loopback interface (`lo`) is configured with
+** the ip address `127.0.0.1/8` 
+* An interface `eth0` is configured with
+** the IPv4 addresses `192.0.2.2/24` and `198.51.100.5/4`
+** the IPv6 address `2001:db8::2/48`
+** the dns servers `192.0.2.1` and `192.0.2.5`
+
+This the configuration is named `lan`.
+
+The two device sections could be omitted.
+
+<<<
+
+[#example_dhcp]
+==== DHCP configuration example
+[source]
+----
+include::example.dhcp[]
+----
+
+This configures the linux network interface `eth0` with DHCPv4 and DHCPv6.
+
+[#example_bridge]
+==== Bridge configuration example
+[source]
+----
+include::example.bridge[]
+----
+
+This configures a bridge interface with the name `br-local` and the interfaces `eth0`, `eth1`, `eth2` attached to it. It is then configured with ip address `192.0.2.2/24`.
+
+<<<
+
+[#example_routes]
+==== Route configuration example
+[source]
+----
+include::example.routes[]
+----
+
+This configures the linux network interface `eth0` with
+
+* the IPv4 address `192.0.2.2/24`
+* the IPv6 address `2001:db8::2/96`
+
+It then adds the routes:
+
+ * default gateway (`0.0.0.0/0`) via `192.0.2.3`
+ * to network `198.51.100.128/25` via `192.0.2.100`
+ * default IPv6 gateway (`::/0`) via `2001:db8::1` with an MTU of `1500`
+ * to network `2001:db8::1:/96` via `2001:db8::15`
