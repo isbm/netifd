@@ -1,0 +1,18 @@
+[{
+    "flags": {
+        "_type": "array",
+        "expected": [
+            "UP",
+            "LOWER_UP",
+            "MULTICAST"
+        ]
+    },
+    "linkinfo": {
+        "_exact": false,
+        "info_data": {
+            "_exact": false,
+            "protocol": "802.1ad",
+            "id": 41
+        }
+    }
+}]

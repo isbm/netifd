@@ -1,0 +1,17 @@
+config interface loopback
+	option device  lo
+	option proto   static
+	option ipaddr  127.0.0.1
+	option netmask 255.0.0.0
+
+config device
+	option name dhcp0
+
+config interface lan_v4
+	option device dhcp0
+	option proto  isc-dhcp
+
+config interface lan_v6
+	option device        dhcp0
+	option proto         isc-dhcp6
+	option dad_wait_time 10

@@ -1,0 +1,10 @@
+[{
+    "dst": "default",
+    "gateway": "192.168.7.1",
+    "metric": 1
+},
+{
+    "dst": "default",
+    "gateway": "192.168.7.240",
+    "metric": 2
+}]

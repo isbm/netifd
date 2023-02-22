@@ -1,0 +1,15 @@
+[{
+    "addr_info": [{
+            "family": "inet",
+            "local": "192.168.7.2",
+            "prefixlen": 24,
+            "scope": "global"
+        },
+        {
+            "family": "inet",
+            "local": "192.168.8.2",
+            "prefixlen": 25,
+            "scope": "global"
+        }
+    ]
+}]

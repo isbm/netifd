@@ -1,0 +1,90 @@
+config globals 'globals'
+	option ip_default_ttl 128
+
+config device
+	option name                      lo
+	option ip_forwarding             0
+	option ip6_forwarding            0
+	option ip6_accept_routing_header rh2
+
+config interface loopback
+	option device  lo
+	option proto   static
+	option ipaddr  127.0.0.1
+	option netmask 255.0.0.0
+
+config device
+	option name                      eth0
+	option mtu                       1280
+	option ip_forwarding             1
+	option ip6_forwarding            1
+	option arp                       0
+	option ip6_accept_routing_header all
+	option ip6_hop_limit             128
+
+config interface lan
+	option device  eth0
+	option proto   static
+	option ipaddr  192.168.7.2
+	option netmask 255.255.255.0
+	option ip6addr fc80::2/16
+	list dns       1.2.3.4
+	list dns       4.5.6.7
+
+config interface lan_1
+	option device  '@lan'
+	option proto   static
+	option ipaddr  192.168.8.2
+	option netmask 255.255.255.128
+	option ip6addr fc80:1234::2/24
+
+config route r1
+	option interface lan
+	option target    0.0.0.0
+	option netmask   0.0.0.0
+	option gateway   192.168.7.1
+	option metric    1
+
+config route r2
+	option interface lan_1
+	option target    0.0.0.0
+	option netmask   0.0.0.0
+	option gateway   192.168.8.1
+	option metric    2
+	option advmss    1200
+
+config route6 r61
+	option interface lan
+	option target    ::/0
+	option gateway   fc80::254
+	option metric    1
+	option mtu       1500
+	option advmss    1000
+
+config route6 r62
+	option interface lan_1
+	option target    ::/0
+	option gateway   fc80:1234:12::1
+	option metric    2
+
+
+config device
+	option name                      test_veth
+	option type                      veth
+	option peer_name                 test_veth_right
+	option arp                       0
+	option ip6_accept_routing_header none
+
+config interface test_veth_intf
+	option device  test_veth
+	option proto   static
+	list ipaddr    10.0.0.1
+	list ipaddr    10.0.0.2/255.255.255.0
+	list ipaddr    10.0.0.3/23
+	option netmask 25
+
+config interface test_veth_right_intf
+	option device  test_veth_right
+	option proto   static
+	option ipaddr  10.0.0.2
+	option netmask 255.255.255.128

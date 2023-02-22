@@ -1,0 +1,16 @@
+config interface loopback
+	option device  lo
+	option proto   static
+	option ipaddr  127.0.0.1
+	option netmask 255.0.0.0
+
+config device
+	option type bridge
+	option name br-bridge
+	list ports  eth0
+	list ports  eth0.42
+	list ports  dhcp0
+
+config interface bridge
+	option device br-bridge
+	option proto  udhcp

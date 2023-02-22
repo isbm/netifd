@@ -1,0 +1,14 @@
+[{
+    "dst": "default",
+    "gateway": "fc80::254",
+    "metric": 1,
+    "metrics": [{
+        "advmss": 1000,
+        "mtu": 1500
+    }]
+},
+{
+    "dst": "default",
+    "gateway": "fc80:1234:12::1",
+    "metric": 2
+}]
