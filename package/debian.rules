@@ -3,5 +3,9 @@
 override_dh_auto_configure:
 	dh_auto_configure -- -DENABLE_PROTO_SHELL=OFF
 
+override_dh_install:
+	dh_install
+	dh_installdirs /lib/netifd
+
 %:
 	dh $@ --buildsystem=cmake
