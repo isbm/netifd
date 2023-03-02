@@ -1,0 +1,5 @@
+{
+    "forwarding": "1",
+    "accept_source_route": "1",
+    "hop_limit": "128"
+}

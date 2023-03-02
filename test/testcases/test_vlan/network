@@ -1,0 +1,48 @@
+config device
+	option name      eth0
+	option multicast 0
+
+config device
+	option type      8021ad
+	option name      vlan41ad
+	option ifname    eth0
+	option vid       41
+	option multicast 1
+
+config device
+	option type      8021q
+	option name      vlan42q
+	option ifname    eth0
+	option vid       42
+	option multicast 0
+
+config device
+	option type      8021q
+	option name      qinq
+	option ifname    vlan41ad
+	option vid       10
+
+config interface lan_ad
+	option device  vlan41ad
+	option proto   static
+	option ipaddr  192.168.7.2
+	option netmask 255.255.255.0
+
+config interface lan_q
+	option device  vlan42q
+	option proto   static
+	option ipaddr  192.168.7.3
+	option netmask 255.255.255.0
+
+config interface lan_qinq
+	option device  qinq
+	option proto   static
+	option ipaddr  192.168.7.4
+	option netmask 255.255.255.0
+
+config interface lan_auto
+	option device       eth0.43
+	option proto        static
+	option ipaddr       192.168.7.4
+	option netmask      255.255.255.0
+	option defaultroute 0

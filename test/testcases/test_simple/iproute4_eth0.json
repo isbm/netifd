@@ -1,0 +1,13 @@
+[{
+    "dst": "default",
+    "gateway": "192.168.7.1",
+    "metric": 1
+},
+{
+    "dst": "default",
+    "gateway": "192.168.8.1",
+    "metric": 2,
+    "metrics": [
+        {"advmss": 1200}
+    ]
+}]

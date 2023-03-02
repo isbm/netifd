@@ -102,7 +102,6 @@ start_isc_dhcp_client(struct isc_dhcp_proto_state *state)
 		"/sbin/dhclient",
 		state->dhcpv6 ? "-6" : "-4",
 		"-d",
-		"-q",
 		"-pf", "/dev/null",
 		"-lf", leasefile,
 		"-cf", conffile,

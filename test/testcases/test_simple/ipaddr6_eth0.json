@@ -1,0 +1,18 @@
+[
+    {
+        "addr_info": [
+            {
+                "family": "inet6",
+                "local": "fc80:1234::2",
+                "prefixlen": 24,
+                "scope": "global"
+            },
+            {
+                "family": "inet6",
+                "local": "fc80::2",
+                "prefixlen": 16,
+                "scope": "global"
+            }
+        ]
+    }
+]

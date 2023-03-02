@@ -1,0 +1,8 @@
+[{
+    "addr_info": [{
+        "family": "inet6",
+        "local": "fd00::1234",
+        "prefixlen": 128,
+        "scope": "global"
+    }]
+}]
