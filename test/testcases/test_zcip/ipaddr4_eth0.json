@@ -1,0 +1,8 @@
+[{
+    "addr_info": [{
+        "family": "inet",
+        "local": "169.254.109.146",
+        "prefixlen": 16,
+        "scope": "link"
+    }]
+}]

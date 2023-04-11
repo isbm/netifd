@@ -94,7 +94,7 @@ class TestSuite():
                 self.dhcp_config.append(dhcp)
             elif entry == "waitfor":
                 with open(fullpath) as f:
-                    self.waitfor_interfaces = [e.strip() for e in f.readlines() if e.strip()]
+                    self.waitfor_interfaces = [e.strip() for e in f.readlines() if e.strip() and not e.strip().startswith('#')]
             elif entry == "nameservers":
                 self.validation_files.append(InterfaceFile(fullpath))
             elif entry.endswith(".json") and entry.split("_")[0] in SUPPORTED_JSON_RESULT_PREFIXES:
