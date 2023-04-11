@@ -87,13 +87,20 @@ $(WORKDIR)/build-busybox/.config: $(ROOT_DIR)/busybox.cfg | $(WORKDIR)/build-bus
 	cp $< $@
 	make -C $(SOURCEDIR)/busybox O=${WORKDIR}/build-busybox oldconfig
 
-.PHONY: build-udhcpc6
-build-udhcpc6: $(SOURCEDIR)/busybox $(WORKDIR)/build-busybox/.config
+.PHONY: build-busybox
+build-busybox: $(SOURCEDIR)/busybox $(WORKDIR)/build-busybox/.config
 	@echo Building busybox
 	make -j5 -C $< O=${WORKDIR}/build-busybox
+
+.PHONY: build-udhcpc6
+build-udhcpc6: build-busybox
 	cp ${WORKDIR}/build-busybox/busybox /usr/bin/udhcpc6
 build: build-udhcpc6
 
+.PHONY: build-zcip
+build-zcip: build-busybox
+	cp ${WORKDIR}/build-busybox/busybox /usr/sbin/zcip
+build: build-zcip
 
 # Build netifd
 # NOTE: we have do define LIBNL_LIBS and the include path to libnl
@@ -138,5 +145,5 @@ container-run-tests: fetch
 
 .PHONY: clean
 clean:
-	rm -rf $(SOURCEDIR);
+	rm -rf $(SOURCEDIR)
 endif
