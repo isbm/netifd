@@ -86,6 +86,7 @@ enum {
 	ADDR_VALID,
 	ADDR_OFFLINK,
 	ADDR_CLASS,
+	ADDR_SCOPE,
 	__ADDR_MAX
 };
 
@@ -98,6 +99,7 @@ static const struct blobmsg_policy proto_ip_addr[__ADDR_MAX] = {
 	[ADDR_VALID] = { .name = "valid", .type = BLOBMSG_TYPE_INT32 },
 	[ADDR_OFFLINK] = { .name = "offlink", .type = BLOBMSG_TYPE_BOOL },
 	[ADDR_CLASS] = { .name = "class", .type = BLOBMSG_TYPE_STRING },
+	[ADDR_SCOPE] = { .name = "scope", .type = BLOBMSG_TYPE_STRING },
 };
 
 static struct device_addr *
@@ -205,6 +207,11 @@ parse_address_item(struct blob_attr *attr, bool v6, bool ext)
 			goto error;
 
 		addr->mask = new_mask;
+	}
+
+	addr->is_scope_link = false;
+	if ((cur = tb[ADDR_SCOPE])) {
+		addr->is_scope_link = strcmp(blobmsg_data(cur), "link") == 0;
 	}
 
 	cur = tb[ADDR_IPADDR];

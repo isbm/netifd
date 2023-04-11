@@ -2637,6 +2637,7 @@ static int system_addr(struct device *dev, struct device_addr *addr, int cmd)
 		.ifa_family = (alen == 4) ? AF_INET : AF_INET6,
 		.ifa_prefixlen = addr->mask,
 		.ifa_index = dev->ifindex,
+		.ifa_scope = addr->is_scope_link ? RT_SCOPE_LINK : RT_SCOPE_UNIVERSE
 	};
 
 	struct nl_msg *msg;
