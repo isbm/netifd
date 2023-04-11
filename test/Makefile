@@ -122,7 +122,7 @@ build: build-netifd
 
 .PHONY: run-tests
 run-tests:
-	bash run_integration_test.sh
+	python3 run_tests.py
 
 .PHONY: clean
 clean:
@@ -141,7 +141,7 @@ container-run:
 
 .PHONY: container-run-tests
 container-run-tests: fetch
-	podman run --rm --privileged --name netifd -v ..:/data netifd/test /bin/bash -c "make -j5 build && python3 run_tests.py"
+	podman run --rm --privileged --name netifd -v ..:/data netifd/test /bin/bash -c "make -j5 build && make run-tests"
 
 .PHONY: clean
 clean:
