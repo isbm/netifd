@@ -136,6 +136,8 @@ struct device_addr {
 
 	struct device_route subnet;
 
+	bool is_scope_link;
+
 	/* ipv4 only */
 	uint32_t broadcast;
 	uint32_t point_to_point;

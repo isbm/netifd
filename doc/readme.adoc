@@ -20,6 +20,7 @@ Supported configuration:
 
  * static configuration
  * DHCPv4/DHCPv6 (using udhcpc/udhcpc6)
+ * AUTOIP / zeroconf (using busybox's zcip)
  * bridges
  * VLAN (802.1Q)
  * MACVLAN
@@ -220,6 +221,13 @@ For IPv6:
 * DNS server(s)
 
 To use one interface for DHCPv4 and DHCPv6 at the same time, an alias interface must be used. See <<example_dhcp>>.
+
+===== zcip
+The `zcip` protocol configures an interface using an IPv4 link local address accoring to RFC3927, also known as autoip or zeroconf.
+
+It uses busyboxes zcip to find a random ip address from the range 169.254.1.0 to 169.254.254.255, that is not already used in the connected network segment.
+
+There are no configurable settings for `zcip` protocol.
 
 [#route]
 === Route config

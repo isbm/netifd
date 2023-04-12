@@ -23,7 +23,8 @@ SET(SOURCES
 	iprule.c proto.c proto-static.c
 	config.c device.c bridge.c veth.c vlan.c alias.c
 	macvlan.c ubus.c vlandev.c wireless.c
-	extdev.c bonding.c proto-isc-dhcp.c proto-udhcp.c)
+	extdev.c bonding.c proto-isc-dhcp.c proto-udhcp.c
+	proto-zcip.c)
 
 IF(ENABLE_PROTO_SHELL)
 	LIST(APPEND SOURCES proto-shell.c)
@@ -83,5 +84,11 @@ INSTALL(TARGETS isc-dhcp-script
 ADD_EXECUTABLE(udhcp-script udhcp-script.c)
 TARGET_LINK_LIBRARIES(udhcp-script ${ubus} ${ubox})
 INSTALL(TARGETS udhcp-script
+	RUNTIME DESTINATION libexec/netifd
+)
+
+ADD_EXECUTABLE(zcip-script zcip-script.c)
+TARGET_LINK_LIBRARIES(zcip-script ${ubus} ${ubox})
+INSTALL(TARGETS zcip-script
 	RUNTIME DESTINATION libexec/netifd
 )

@@ -56,7 +56,7 @@ class TestSuiteRun():
         self._processes = []
         self._veths = []
 
-    def _add_veth_pair(self, name: str, peername: str) -> int:
+    def _add_veth_pair(self, name: str, peername: str, peermac: str = None) -> int:
         self._ipr.link('add',
             ifname=name,
             kind='veth',
@@ -67,6 +67,8 @@ class TestSuiteRun():
         )
         idx = self._ipr.link_lookup(ifname=name)[0]
         self._ipr.link('set', index=idx, state='up')
+        if peermac:
+            self._netns_test.link('set', ifname=peername, address=peermac)
         self._veths.append(idx)
         return idx
 
@@ -74,7 +76,7 @@ class TestSuiteRun():
         return os.path.join(self._tempdir.name, name)
 
     def _setup_dummy_eth0(self) -> None:
-        self._add_veth_pair('netifd_eth0', 'eth0')
+        self._add_veth_pair('netifd_eth0', 'eth0', '02:eb:eb:eb:eb:eb')
 
     def _setup_dhcp_servers(self) -> None:
         interfaces = {}
@@ -174,7 +176,7 @@ class TestSuiteRun():
         if not remaining:
             return
 
-        timer = Timer(5)
+        timer = Timer(15)
         self._logger.debug("Waiting for interfaces to come up: " + ", ".join(remaining))
         while remaining:
             for intf in remaining[:]:
@@ -211,6 +213,7 @@ class TestSuiteRun():
         self._start_ubusd()
         self._logger.debug("Waiting for ubus to start")
         self._wait_for_ubus()
+        self._start_process(["/opt/netifd/bin/ubus", "monitor"], self._netns_test, self._get_temp_file("ubus.monitor"))
         self._logger.debug("Starting netifd")
         self._start_netifd()
         if not self._wait_for_network():
@@ -269,11 +272,13 @@ class TestSuiteRun():
             cmp.compare(expected, actual, select)  
 
     def _validate_ip_addr(self, val_file: InterfaceFile):
-        self._validate_ip([
+        args = [
             'addr', 'show',
             'dev', val_file.interface,
-            'scope', 'global'
-        ], val_file, 'addr_info')
+        ]
+        if val_file.version == 6:
+            args += ['scope', 'global']
+        self._validate_ip(args, val_file, 'addr_info')
 
     def _validate_ip_link(self, val_file: InterfaceFile):
         self._validate_ip([

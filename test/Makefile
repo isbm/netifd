@@ -87,13 +87,20 @@ $(WORKDIR)/build-busybox/.config: $(ROOT_DIR)/busybox.cfg | $(WORKDIR)/build-bus
 	cp $< $@
 	make -C $(SOURCEDIR)/busybox O=${WORKDIR}/build-busybox oldconfig
 
-.PHONY: build-udhcpc6
-build-udhcpc6: $(SOURCEDIR)/busybox $(WORKDIR)/build-busybox/.config
+.PHONY: build-busybox
+build-busybox: $(SOURCEDIR)/busybox $(WORKDIR)/build-busybox/.config
 	@echo Building busybox
 	make -j5 -C $< O=${WORKDIR}/build-busybox
+
+.PHONY: build-udhcpc6
+build-udhcpc6: build-busybox
 	cp ${WORKDIR}/build-busybox/busybox /usr/bin/udhcpc6
 build: build-udhcpc6
 
+.PHONY: build-zcip
+build-zcip: build-busybox
+	cp ${WORKDIR}/build-busybox/busybox /usr/sbin/zcip
+build: build-zcip
 
 # Build netifd
 # NOTE: we have do define LIBNL_LIBS and the include path to libnl
@@ -115,7 +122,7 @@ build: build-netifd
 
 .PHONY: run-tests
 run-tests:
-	bash run_integration_test.sh
+	python3 run_tests.py
 
 .PHONY: clean
 clean:
@@ -134,9 +141,9 @@ container-run:
 
 .PHONY: container-run-tests
 container-run-tests: fetch
-	podman run --rm --privileged --name netifd -v ..:/data netifd/test /bin/bash -c "make -j5 build && python3 run_tests.py"
+	podman run --rm --privileged --name netifd -v ..:/data netifd/test /bin/bash -c "make -j5 build && make run-tests"
 
 .PHONY: clean
 clean:
-	rm -rf $(SOURCEDIR);
+	rm -rf $(SOURCEDIR)
 endif
